@@ -30,32 +30,34 @@ cbuffer PixelShaderSettings : register(b0) {
 #define PIXEL_FILTER 745.0
 #define SPIN_EASE 1.0
 #define PI 3.14159265359
-#define IS_ROTATE false
+#define IS_ROTATE true
+#define ZOOM 1.2  // Lower value = smaller size (try 0.5-0.8)
 
-float4 effect(float4 screenSize, float2 screen_coords) {
-    float pixel_size = length(screenSize.xy) / PIXEL_FILTER;
-    float2 uv = (floor(screen_coords.xy*(1./pixel_size))*pixel_size - 0.5*screenSize.xy)/length(screenSize.xy); // - OFFSET
+float4 effect(float2 resolution, float2 screen_coords) {
+    float pixel_size = length(resolution) / PIXEL_FILTER;
+    float2 uv = (floor(screen_coords*(1./pixel_size))*pixel_size - 0.5*resolution) / resolution.y; // Divide by height only
+    uv /= ZOOM;
     float uv_len = length(uv);
-    
+
     float speed = (SPIN_ROTATION*SPIN_EASE*0.2);
     if(IS_ROTATE){
        speed = Time * speed;
     }
     speed += 302.2;
     float new_pixel_angle = atan2(uv.y, uv.x) + speed - SPIN_EASE*20.*(1.*SPIN_AMOUNT*uv_len + (1. - 1.*SPIN_AMOUNT));
-    float2 mid = (screenSize.xy/length(screenSize.xy))/2.;
+    float2 mid = (resolution / resolution.y) / 2.; // Divide by height
     uv = (float2((uv_len * cos(new_pixel_angle) + mid.x), (uv_len * sin(new_pixel_angle) + mid.y)) - mid);
-    
+
     uv *= 30.;
     speed = Time*(SPIN_SPEED);
     float2 uv2 = float2(uv.x, uv.y);
-    
+
     for(int i=0; i < 5; i++) {
         uv2 += sin(max(uv.x, uv.y)) + uv;
         uv  += 0.5*float2(cos(5.1123314 + 0.353*uv2.y + speed*0.131121),sin(uv2.x - 0.113*speed));
         uv  -= 1.0*cos(uv.x + uv.y) - 1.0*sin(uv.x*0.711 - uv.y);
     }
-    
+
     float contrast_mod = (0.25*CONTRAST + 0.5*SPIN_AMOUNT + 1.2);
     float paint_res = min(2., max(0.,length(uv)*(0.035)*contrast_mod));
     float c1p = max(0.,1. - contrast_mod*abs(1.-paint_res));
@@ -70,7 +72,8 @@ float4 main(PSInput pin) : SV_TARGET {
     float4 pos = pin.pos;
     float2 uv = pin.uv;
 
-    float4 bg = effect(pos, uv * pos.xy);
+
+    float4 bg = effect(Resolution, uv * Resolution);
     float4 fg = shaderTexture.Sample(samplerState, uv);
 
     return (bg / 3.0) + fg;
