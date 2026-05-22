@@ -27,7 +27,7 @@ cbuffer PixelShaderSettings : register(b0) {
 #define ENABLE_OVERSCAN         1
 #define ENABLE_BLOOM            1
 #define ENABLE_BLUR             1
-#define ENABLE_GRAYSCALE        1
+#define ENABLE_GRAYSCALE        0
 #define ENABLE_BLACKLEVEL       1
 #define ENABLE_REFRESHLINE      1
 #define ENABLE_SCANLINES        1
@@ -35,7 +35,7 @@ cbuffer PixelShaderSettings : register(b0) {
 #define ENABLE_GRAIN            1
 
 // Settings - Curve
-#define CURVE_INTENSITY         0.3
+#define CURVE_INTENSITY         0.2
 
 // Settings - Overscan
 #define OVERSCAN_PERCENTAGE     0.02
